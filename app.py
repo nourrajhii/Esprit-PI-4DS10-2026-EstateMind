@@ -1,8 +1,11 @@
+"""
+app.py - Interface Streamlit — Assistant Juridique Immobilier Tunisien
+"""
+
 import streamlit as st
 from rag import ask
 import os
 
-# Configuration de la page
 st.set_page_config(
     page_title="Assistant Juridique Immobilier Tunisien",
     page_icon="⚖️",
@@ -10,242 +13,268 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS personnalisé pour un meilleur design
 st.markdown("""
 <style>
-    /* Fond et couleurs principales */
-    .main {
-        background-color: #f8f9fa;
+    /* ── Global ── */
+    html, body, [data-testid="stAppViewContainer"] {
+        background-color: #f4f6f9;
+        font-family: 'Segoe UI', sans-serif;
     }
-    
-    /* Titre principal */
-    .title-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
+
+    /* ── Header ── */
+    .app-header {
+        background: linear-gradient(135deg, #0f2d4a 0%, #1a5276 100%);
+        padding: 1.6rem 2rem;
         border-radius: 10px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     }
-    
-    .title-text {
-        color: white;
-        font-size: 2.5rem;
-        font-weight: bold;
+    .app-header-icon { font-size: 2.2rem; }
+    .app-header-title {
+        color: #ffffff;
+        font-size: 1.5rem;
+        font-weight: 700;
         margin: 0;
-        text-align: center;
+        line-height: 1.2;
     }
-    
-    .subtitle-text {
-        color: #e0e7ff;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
-        text-align: center;
+    .app-header-sub {
+        color: #aed6f1;
+        font-size: 0.85rem;
+        margin: 0.2rem 0 0 0;
     }
-    
-    /* Zone de chat */
-    .stChatMessage {
-        background-color: white;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+    /* ── Sidebar ── */
+    [data-testid="stSidebar"] {
+        background-color: #0f2d4a;
     }
-    
-    /* Boutons d'exemple */
-    .example-button {
-        background-color: white;
-        border: 2px solid #667eea;
+    [data-testid="stSidebar"] * {
+        color: #d6eaf8 !important;
+    }
+    .sidebar-section {
+        background: rgba(255,255,255,0.06);
         border-radius: 8px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        cursor: pointer;
-        transition: all 0.3s;
+        padding: 0.9rem 1rem;
+        margin-bottom: 0.8rem;
     }
-    
-    .example-button:hover {
-        background-color: #667eea;
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(102,126,234,0.3);
+    .sidebar-section h4 {
+        color: #aed6f1 !important;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 0 0 0.6rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 0.4rem;
     }
-    
-    /* Zone d'information */
-    .info-box {
-        background-color: #e0e7ff;
-        border-left: 4px solid #667eea;
-        padding: 1rem;
-        border-radius: 5px;
-        margin: 1rem 0;
+    .sidebar-section p, .sidebar-section li {
+        font-size: 0.85rem;
+        margin: 0.2rem 0;
+        line-height: 1.5;
     }
-    
-    /* Disclaimer */
+    .source-tag {
+        display: inline-block;
+        background: rgba(41,128,185,0.3);
+        border: 1px solid rgba(41,128,185,0.5);
+        border-radius: 4px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.78rem;
+        color: #aed6f1 !important;
+        margin: 0.2rem 0.1rem;
+    }
+
+    /* ── Chat messages ── */
+    [data-testid="stChatMessage"] {
+        background: #ffffff;
+        border-radius: 10px;
+        border: 1px solid #e0e6ed;
+        padding: 0.5rem 0.8rem;
+        margin-bottom: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    /* ── Disclaimer ── */
     .disclaimer {
-        background-color: #fef3c7;
-        border-left: 4px solid #f59e0b;
-        padding: 1rem;
-        border-radius: 5px;
-        margin: 1rem 0;
-        font-size: 0.9rem;
+        background: #fef9f0;
+        border-left: 3px solid #e67e22;
+        border-radius: 0 6px 6px 0;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.8rem;
+        color: #7d6608;
+        margin-top: 0.6rem;
     }
+
+    /* ── Welcome screen ── */
+    .welcome-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem 2rem 2rem;
+        text-align: center;
+    }
+    .welcome-logo {
+        font-size: 7rem;
+        line-height: 1;
+        margin-bottom: 1.5rem;
+        filter: drop-shadow(0 4px 16px rgba(26,82,118,0.18));
+    }
+    .welcome-title {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: #0f2d4a;
+        margin: 0 0 0.7rem 0;
+        letter-spacing: -0.02em;
+    }
+    .welcome-subtitle {
+        font-size: 0.95rem;
+        color: #5d7a8a;
+        max-width: 520px;
+        line-height: 1.7;
+        margin: 0 auto 2rem auto;
+    }
+    .welcome-divider {
+        width: 48px;
+        height: 3px;
+        background: linear-gradient(90deg, #1a5276, #2980b9);
+        border-radius: 2px;
+        margin: 0 auto 2rem auto;
+    }
+    .welcome-domains {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+        max-width: 580px;
+        margin: 0 auto;
+    }
+    .domain-chip {
+        background: #ffffff;
+        border: 1px solid #d0dae6;
+        border-radius: 20px;
+        padding: 0.35rem 0.85rem;
+        font-size: 0.8rem;
+        color: #1a3a52;
+    }
+
+    /* ── Hide Streamlit branding ── */
+    #MainMenu, footer, header { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# En-tête personnalisé
+
+# ── Header ──────────────────────────────────────────────────
 st.markdown("""
-<div class="title-container">
-    <h1 class="title-text">⚖️ Assistant Juridique Immobilier</h1>
-    <p class="subtitle-text">Expert en droit immobilier tunisien - Réponses basées sur les textes de loi</p>
+<div class="app-header">
+    <div class="app-header-icon">⚖️</div>
+    <div>
+        <p class="app-header-title">Assistant Juridique Immobilier Tunisien</p>
+        <p class="app-header-sub">Droit réel · Promotion immobilière · Fiscalité · Baux</p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Vérifier si la base existe
+
+# ── Vérification base ────────────────────────────────────────
 if not os.path.exists("db"):
-    st.error("❌ **Base de données non trouvée**")
-    st.info("👉 Exécutez d'abord la commande : `python build_db.py`")
+    st.error("**Base de données introuvable.** Exécutez d'abord : `python build_db.py`")
     st.stop()
 
-# Sidebar avec informations
+
+# ── Sidebar ─────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### 📚 Domaines couverts")
     st.markdown("""
-    - 📋 **Baux d'habitation**
-    - 🏢 **Vente immobilière**
-    - 💰 **Fiscalité immobilière**
-    - 📝 **Procédures notariales**
-    - ⚖️ **Droits réels**
-    - 🏗️ **Copropriété**
-    """)
-    
-    st.markdown("---")
-    
-    st.markdown("### ℹ️ Comment ça marche ?")
+    <div style="padding:1rem 0 0.5rem 0; text-align:center;">
+        <span style="font-size:1.8rem;">⚖️</span>
+        <p style="color:#aed6f1 !important; font-weight:700; font-size:0.95rem; margin:0.3rem 0 0 0;">
+            Assistant Juridique
+        </p>
+        <p style="color:#7fb3d3 !important; font-size:0.75rem; margin:0;">
+            Tunisie · Immobilier
+        </p>
+    </div>
+    <hr style="border-color:rgba(255,255,255,0.1); margin:0.5rem 0 1rem 0;">
+    """, unsafe_allow_html=True)
+
     st.markdown("""
-    1. **Posez** votre question
-    2. L'IA **recherche** dans les textes de loi
-    3. Vous recevez une **réponse précise** avec les articles pertinents
-    """)
+    <div class="sidebar-section">
+        <h4>📚 Sources juridiques</h4>
+        <span class="source-tag">Code des Droits Réels 1965</span>
+        <span class="source-tag">Loi Promotion Immobilière 1990</span>
+        <span class="source-tag">Loi de Finances 2025</span>
+    </div>
+
     
-    st.markdown("---")
-    
-    st.markdown("### ⚠️ Avertissement Important")
-    st.warning("""
-    Cet outil fournit des **informations juridiques générales**, 
-    pas des conseils juridiques personnalisés.
-    
-    Pour votre situation spécifique, consultez un **avocat** ou un **notaire**.
-    """)
-    
-    st.markdown("---")
-    
+    """, unsafe_allow_html=True)
+
+    st.markdown("<hr style='border-color:rgba(255,255,255,0.1);'>", unsafe_allow_html=True)
+
     if st.button("🔄 Nouvelle conversation", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
-    
-    st.markdown("---")
-    st.caption("💡 Propulsé par Mistral AI & Ollama")
 
-# Initialiser l'historique
+    st.markdown("""
+    <p style="font-size:0.72rem; color:#7fb3d3 !important; margin-top:1.5rem; line-height:1.5;">
+        ⚠️ Les réponses sont fournies à titre informatif et ne remplacent pas le conseil d'un avocat ou d'un notaire.
+    </p>
+    """, unsafe_allow_html=True)
+
+
+# ── Session ──────────────────────────────────────────────────
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Afficher l'historique des messages
+
+# ── Historique ───────────────────────────────────────────────
 for message in st.session_state.messages:
-    with st.chat_message(message["role"], avatar="🧑" if message["role"] == "user" else "⚖️"):
+    avatar = "🧑" if message["role"] == "user" else "⚖️"
+    with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
-# Zone de saisie
-if question := st.chat_input("💬 Posez votre question juridique ici..."):
-    # Ajouter et afficher la question
-    st.session_state.messages.append({"role": "user", "content": question})
-    with st.chat_message("user", avatar="🧑"):
-        st.markdown(question)
-    
-    # Générer et afficher la réponse
-    with st.chat_message("assistant", avatar="⚖️"):
-        with st.spinner("🔍 Recherche dans les textes juridiques..."):
-            try:
-                response = ask(question)
-                
-                # Afficher la réponse
-                st.markdown(response)
-                
-                # Ajouter le disclaimer
-                st.markdown("""
-                <div class="disclaimer">
-                    <strong>⚠️ Disclaimer :</strong> Cette réponse est basée sur les textes de loi disponibles 
-                    dans la base de données. Elle constitue une information juridique générale et ne remplace 
-                    pas un conseil juridique personnalisé d'un avocat ou notaire.
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # Sauvegarder dans l'historique
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                
-            except Exception as e:
-                st.error(f"❌ **Erreur :** {str(e)}")
-                st.info("💡 **Solutions possibles :**\n- Vérifiez qu'Ollama est lancé\n- Vérifiez que le modèle Mistral est installé")
 
-# Exemples de questions (affiché uniquement si pas de conversation)
+# ── Page d'accueil ───────────────────────────────────────────
 if not st.session_state.messages:
-    st.markdown("### 💡 Questions fréquentes")
-    st.markdown("*Cliquez sur une question pour commencer*")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if st.button("📝 Comment enregistrer un bail immobilier ?", use_container_width=True):
-            st.session_state.messages.append({
-                "role": "user", 
-                "content": "Comment enregistrer un bail immobilier en Tunisie ?"
-            })
-            st.rerun()
-        
-        if st.button("⏱️ Quelle est la durée minimale d'un bail ?", use_container_width=True):
-            st.session_state.messages.append({
-                "role": "user",
-                "content": "Quelle est la durée minimale d'un bail à usage d'habitation ?"
-            })
-            st.rerun()
-        
-        if st.button("💰 Quels sont les droits d'enregistrement ?", use_container_width=True):
-            st.session_state.messages.append({
-                "role": "user",
-                "content": "Quels sont les droits d'enregistrement pour l'achat d'un bien immobilier ?"
-            })
-            st.rerun()
-    
-    with col2:
-        if st.button("🚪 Comment résilier un bail ?", use_container_width=True):
-            st.session_state.messages.append({
-                "role": "user",
-                "content": "Quelles sont les conditions pour résilier un bail ?"
-            })
-            st.rerun()
-        
-        if st.button("📄 Quelles sont les obligations du bailleur ?", use_container_width=True):
-            st.session_state.messages.append({
-                "role": "user",
-                "content": "Quelles sont les obligations légales du bailleur ?"
-            })
-            st.rerun()
-        
-        if st.button("🏢 Comment acheter un bien immobilier ?", use_container_width=True):
-            st.session_state.messages.append({
-                "role": "user",
-                "content": "Quelle est la procédure d'achat d'un bien immobilier en Tunisie ?"
-            })
-            st.rerun()
-    
-    # Section d'information
-    st.markdown("---")
     st.markdown("""
-    <div class="info-box">
-        <h4>📖 À propos de cet assistant</h4>
-        <p>
-            Cet assistant juridique utilise l'intelligence artificielle pour vous fournir 
-            des informations précises basées sur les textes de loi tunisiens en vigueur 
-            concernant l'immobilier. Les réponses sont générées à partir d'une base de 
-            connaissances juridiques certifiée.
+    <div class="welcome-screen">
+        <div class="welcome-logo">⚖️</div>
+        <h2 class="welcome-title">Bienvenue sur votre assistant<br>juridique immobilier</h2>
+        <div class="welcome-divider"></div>
+        <p class="welcome-subtitle">
+            Posez vos questions relatives au droit immobilier tunisien.
+            Les réponses sont fondées sur les textes législatifs en vigueur
+            et référencent les articles applicables.
         </p>
+        <div class="welcome-domains">
+            <span class="domain-chip">🏠 Droits réels</span>
+            <span class="domain-chip">📝 Promesse de vente</span>
+            <span class="domain-chip">💰 Fiscalité &amp; TVA</span>
+            <span class="domain-chip">🏗️ Promotion immobilière</span>
+            <span class="domain-chip">🔑 Baux &amp; expulsion</span>
+            <span class="domain-chip">🔒 Hypothèque</span>
+        </div>
     </div>
     """, unsafe_allow_html=True)
+
+
+# ── Saisie principale ────────────────────────────────────────
+if question := st.chat_input("Posez votre question juridique…"):
+    st.session_state.messages.append({"role": "user", "content": question})
+
+    with st.chat_message("user", avatar="🧑"):
+        st.markdown(question)
+
+    with st.chat_message("assistant", avatar="⚖️"):
+        with st.spinner("Recherche en cours…"):
+            try:
+                response = ask(question)
+                st.markdown(response)
+                st.markdown(
+                    '<div class="disclaimer">⚠️ Information générale extraite des textes législatifs tunisiens. '
+                    'Consultez un avocat ou un notaire pour votre situation personnelle.</div>',
+                    unsafe_allow_html=True
+                )
+                st.session_state.messages.append({"role": "assistant", "content": response})
+            except Exception as e:
+                st.error(f"Erreur : {e}")
+                st.info("Vérifiez qu'Ollama est lancé (`ollama serve`) et que les modèles sont installés.")
