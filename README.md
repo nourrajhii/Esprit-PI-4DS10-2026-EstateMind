@@ -76,80 +76,56 @@ EstateMind is an AI-powered platform for the Tunisian real estate market, combin
    
 
 ## Architecture 
-EstateMind – Tunisian Real Estate Intelligence Platform
-Esprit School of Engineering · PIDS 4DS · 2025–2026
-═══════════════════════════════════════════════════════════════════
 
-  ┌─────────────────────────────────────────────────────────────┐
-  │                      DATA SOURCES                           │
-  │         Mubawab · Menzili · Legal Texts · APIs              │
-  └──────────────────────┬──────────────────────────────────────┘
-                         │
-                         ▼
-┌────────────────────────────────────────────────────────────────┐
-│  BO1 · AI SCRAPING AGENT                                       │
-│                                                                │
-│  dcrawl/                                                       │
-│  ├── scrapers/          → Mubawab, Menzili, Generic scrapers   │
-│  ├── processing/        → Cleaner · Feature Engineering        │
-│  ├── pipeline/          → cleaned_listings.csv  │
-│  │                         X_train / X_test · y_train / y_test │
-│  ├── main.py            → Full orchestrator                    │
-│  └── run_pipeline.py    → Standalone pipeline                  │
-└────────────────────────────┬───────────────────────────────────┘
-                             │
-                             ▼
-         ┌───────────────────────────────────┐
-         │           STORAGE LAYER           │
-         │  PostgreSQL · MongoDB · FAISS      │
-         └──────┬────────────┬───────────────┘
-                │            │
-       ┌────────┘            └────────┐
-       ▼                             ▼
-┌──────────────────────┐   ┌─────────────────────────────────────┐
-│  BO2 · ANALYTICS     │   │  BO3 · LEGAL ASSISTANCE CHATBOT     │
-│                      │   │                                     │
-│  analytics/          │   │  legal_agent/                       │
-│  ├── models/         │   │  ├── data/                          │
-│  │   ├── price_      │   │  │   ├── مجلة الحقوق العينية 1965  │
-│  │   │   predictor   │   │  │   ├── Loi Promotion Immo 1990   │
-│  │   ├── time_series │   │  │   └── Loi de Finances 2025      │
-│  │   ├── anomaly_    │   │  │
-│  │   │   detector    │   │  ├── rag.py → ReAct Agent           │
-│  │   └── zone_       │   │  │   ├── recherche_locale (FAISS)  │
-│  │       segment.    │   │  │   ├── recherche_web (DuckDuckGo) │
-│  ├── investment/     │   │  │   ├── calcul_fiscal              │
-│  │   ├── roi_calc    │   │  │   └── calcul_financier           │
-│  │   └── profit.     │   │  ├── build_db.py → Build index      │
-│  ├── dashboards/     │   │  └── app.py     → Streamlit UI      │
-│  │   └── Power BI    │   └─────────────────────────────────────┘
-│  ├── train.py        │
-│  └── evaluate.py     │
-└──────────────────────┘
-                             ▼
-         ┌───────────────────────────────────┐
-         │   BO4 · 3D PROPERTY VISUALIZATION │
-         │                                   │
-         │  visualization/                   │
-         │  ├── models_3d/  → Three.js scene │
-         │  ├── maps/       → Mapbox GL JS   │
-         │  └── simulation/ → AI generator   │
-         └───────────────────────────────────┘
-                             │
-                             ▼
-  ┌─────────────────────────────────────────────────────────────┐
-  │                    PRESENTATION LAYER                       │
-  │                                                             │
-  │   Angular (main UI)  ·  Streamlit (chatbot)                 │
-  │   Power BI (dashboards)  ·  Mapbox (city map)               │
-  └─────────────────────────────────────────────────────────────┘
-                             │
-                             ▼
-  ┌─────────────────────────────────────────────────────────────┐
-  │                     INFRASTRUCTURE                          │
-  │                                                             │
-  │   FastAPI (API)  ·  Docker  ·  Elasticsearch  ·  Kibana     │
-  └─────────────────────────────────────────────────────────────┘
+Data Sources
+
+  Mubawab · Menzili · Legal Texts ...
+  
+        |
+        v
+        
+BO1 - AI Scraping Agent
+
+GoogleSearch , Beautiful Soup
+
+        |
+        v
+Storage Layer
+
+  PostgreSQL · MongoDB · FAISS
+        |
+   _____|______________________
+   |           |              |
+   v           v              v
+   
+BO2             BO3            BO4
+
+Analytics       Legal AI       3D Visualization
+
+XGBoost         LangChain      Three.js
+
+Prophet         llama3.2:3b    Mapbox GL
+
+Power BI        Streamlit      Babylon.js
+
+
+
+   |           |              |
+   
+   |___________|______________|
+   
+        |
+        v
+        
+Presentation Layer
+
+  Angular · Streamlit · Power BI
+        |
+        v
+        
+Infrastructure
+
+  FastAPI · Docker · Kibana · Elasticsearch
 
 ## Contributors
 
