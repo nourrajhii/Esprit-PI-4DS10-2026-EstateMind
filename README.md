@@ -77,35 +77,13 @@ EstateMind is an AI-powered platform for the Tunisian real estate market, combin
 
 ## Architecture 
 
-Data Sources  -->  Mubawab · Menzili · Legal Texts
-                          |
-                          v
-                          
-BO1  -->  AI Scraping Agent       (BeautifulSoup · Pandas · GoogleSearch)
-                          |
-                          v
-                          
-Storage       -->  PostgreSQL · MongoDB · FAISS
-                          |
-                          v
-                          
-BO2  -->  Price & Investment Analytics  (XGBoost · Prophet · Power BI)
-                          |
-                          v
-                          
-BO3  -->  Legal Assistance Chatbot      (LangChain · llama3.2:3b · Streamlit)
-                          |
-                          v
-                          
-BO4  -->  3D Visualization              (Three.js · Mapbox GL · Babylon.js)
-                          |
-                          v
-                          
-Presentation  -->  Angular · Streamlit · Power BI
-                          |
-                          v
-                          
-Infrastructure -->  FastAPI · Docker · Kibana · Elasticsearch
+EstateMind
+├── BO1  AI Scraping       → BeautifulSoup · GoogleSearch
+├── BO2  Analytics         → XGBoost
+├── BO3  Legal Chatbot     → LangChain · llama3.2
+├── BO4  3D Visualization  → Three.js · Mapbox
+├── Presentation           → Angular · Streamlit · Power BI
+└── Infrastructure         → FastAPI · Docker
 
 ## Contributors
 
