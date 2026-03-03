@@ -116,11 +116,15 @@ python mubawab_scraper.py
 python main.py
 
 **Running the Legal Chatbot** :
-# Ollama — download from https://ollama.com
+Ollama — download from https://ollama.com
 ollama pull llama3.2:3b
+
 ollama pull nomic-embed-text
+
 cd legal_agent
+
 python build_db.py
+
 python -m streamlit run app.py
 
 ## Acknowledgments
