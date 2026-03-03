@@ -1,65 +1,91 @@
 # PI_DS_EstateMind
 
-Tunisian Real Estate Market
+EstateMind – Tunisian Real Estate Intelligence Platform
 
-# 🏠 PI_DS_EstateMind
+## Overview
 
-## 🇹🇳 Tunisian Real Estate Market – Project Context
+This project was developed as part of the PI – Data Science Program at Esprit School of Engineering (Academic Year 2025–2026).
+EstateMind is an AI-powered platform for the Tunisian real estate market, combining automated data collection, price prediction, legal assistance, and 3D property visualization into a unified intelligent system.
 
-The Tunisian real estate market is **complex and fragmented**.  
-Prices vary significantly across regions, data is scattered, and transactions are influenced by informal factors.  
-This makes market analysis difficult and limits stakeholders’ ability to make informed decisions.
+## Features 
 
-**Keywords / Visual Summary:**
-- 🗺️ Regional Price Disparities  
-- 📊 Scattered Data  
-- ⚠️ Informal Transactions  
-- ❌ Limited Transparency  
-- 📉 Difficult Decision-Making  
+  ***AI Scraping Agent***  — Automated collection, deduplication, and enrichment of real estate listings from multiple Tunisian platforms
+  ***Price & Investment Analytics***  — ML-based price prediction, zone segmentation, and anomaly detection
+ ***Legal Assistance Chatbot***  — RAG-based agent answering questions on Tunisian real estate law 
+***3D Property Visualization***  — AI-generated 3D property models with interactive city map and district simulation
+***Dashboards & Reporting*** — KPIs, market analysis, investment recommendations, and monitoring alerts
 
+## Tech Stack
 
+ ## Frontend: 
 
----
+   *Main web interface* : Angular 
+   *Legal chatbot & analytics*: Streamlit
+   *3D property visualization* :  UIThree.js / Babylon.js
+   *Interactive city maps & districts* : Mapbox GL JS / Leaflet.js
+   *BI dashboards & KPI reporting* : PowerBI
 
-## 🎯 Business Objectives (BOs) & Deliverables (DSOs)
+##  Backend : 
+   *Primary language* : Python 3.11 
+   *REST API backend*: FastAPI
+   *Web scraping agent* : beautiful Soup , GoogleSearch
+   *models* : scikit-learn / XGBoost
+   *RAG framework for legal chatbot* : LangChain
+   *Local LLM inference*: Ollama (llama3.2:3b)
+   *Structured property data* : PostgreSQL
+   *Unstructured listings & legal texts* : MongoDB
+   *Containerization & deployment* :Docker
+   *Monitoring & alerting*: Kibana & ElasticSearch
 
-1. **Data Collection & Quality Enhancement**
+## Architecture 
 
-**Business Objective (BO1):**  
-Enable reliable analytics by consolidating and deduplicating real estate data.
+## Contributors
 
-**Deliverable/DSO1:**  
-An AI scraping agent that collects, cleans, and prepares high-quality real estate data for predictive analysis.
-
----
-
-2. **Price & Investment Analytics (Existing Core Features)**
-
-**Business Objective (BO2):**  
-Help users make informed real estate investment decisions.
-
-**Deliverable/DSO2:**  
-An AI prediction agent that performs investment and pricing analytics, providing actionable insights for decision-making.
-
----
-
-3. **Legal Assistance**
-
-**Business Objective (BO3):**  
-Support users with legal guidance in real estate matters according to Tunisian laws.
-
-**Deliverable/DSO3:**  
-A chatbot assistant offering legal advice on real estate transactions based on Tunisian law.
-
----
-
-4. **Future Visualization**
-
-**Business Objective (BO4):**  
-Enhance real estate decision-making through AI-driven 3D property modeling.
-
-**Deliverable/DSO4:**  
-Develop an AI-powered 3D visualization and simulation engine that automatically generates property models.
+**Nour Rajhi** 
+**Oumaima Nacef** 
+**Yosri Awedi** 
+**Baha Saadaoui**
+**Dhia Romdhane**
+**Taha Yassine Bouguerra**
 
 
+## Academic Context
+
+Developed at Esprit School of Engineering – Tunisia  
+PIDS – 4DS | 2025–2026
+
+
+## Getting Started
+
+python --version
+
+**Running AI Scraping Agent**  :
+python mubawab_scraper.py
+python main.py
+
+**Running the Legal Chatbot** :
+# Ollama — download from https://ollama.com
+ollama pull llama3.2:3b
+ollama pull nomic-embed-text
+cd legal_agent
+python build_db.py
+python -m streamlit run app.py
+
+## Acknowledgments
+
+
+- **Esprit School of Engineering – Tunisia** — academic supervision and institutional support  
+- **Tunisian Ministry of Finance** — Loi de Finances 2025 (n°48-2024)  
+- **Code des Droits Réels** — Loi n°65-5 du 12 février 1965  
+- **Loi sur la Promotion Immobilière** — Loi n°90-17 du 26 février 1990  
+- **مجلة الحقوق العينية (Journals of Real Rights)** — for reference on Tunisian real estate law  
+- **Meta AI** — llama3.2 open-source language model  
+- **Nomic AI** — nomic-embed-text embedding model   
+- **LangChain** — RAG framework for legal chatbot  
+- **Streamlit** — ML application UI framework for chatbot and analytics  
+- **Three.js / Babylon.js** — for 3D property visualization  
+- **Mapbox GL JS / Leaflet.js** — for interactive city maps and district simulation  
+- **PowerBI** — for BI dashboards and KPI reporting  
+- **Docker** — containerization and deployment  
+- **Kibana & ElasticSearch** — monitoring and alerting
 
