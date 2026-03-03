@@ -10,9 +10,17 @@ EstateMind is an AI-powered platform for the Tunisian real estate market, combin
 ## Features 
 
   ***AI Scraping Agent***  — Automated collection, deduplication, and enrichment of real estate listings from multiple Tunisian platforms
+
+  
   ***Price & Investment Analytics***  — ML-based price prediction, zone segmentation, and anomaly detection
+
+  
  ***Legal Assistance Chatbot***  — RAG-based agent answering questions on Tunisian real estate law 
+
+ 
 ***3D Property Visualization***  — AI-generated 3D property models with interactive city map and district simulation
+
+
 ***Dashboards & Reporting*** — KPIs, market analysis, investment recommendations, and monitoring alerts
 
 ## Tech Stack
@@ -20,22 +28,68 @@ EstateMind is an AI-powered platform for the Tunisian real estate market, combin
  ## Frontend: 
 
    *Main web interface* : Angular 
+
+   
    *Legal chatbot & analytics*: Streamlit
+
+   
    *3D property visualization* :  UIThree.js / Babylon.js
+
+   
    *Interactive city maps & districts* : Mapbox GL JS / Leaflet.js
+
+   
    *BI dashboards & KPI reporting* : PowerBI
+
+   
 
 ##  Backend : 
    *Primary language* : Python 3.11 
+
+   
    *REST API backend*: FastAPI
+
+   
    *Web scraping agent* : beautiful Soup , GoogleSearch
-   *models* : scikit-learn / XGBoost
+
+   
+   *models* : scikit-learn / XGBoost..
+
+   
    *RAG framework for legal chatbot* : LangChain
+
+   
    *Local LLM inference*: Ollama (llama3.2:3b)
+
+   
    *Structured property data* : PostgreSQL
+
+   
    *Unstructured listings & legal texts* : MongoDB
+
+   
    *Containerization & deployment* :Docker
+
+   
    *Monitoring & alerting*: Kibana & ElasticSearch
+
+   ┌──────────────────────────────────────────────────────────────────┐
+│                      EstateMind Platform                         │
+├────────────┬────────────┬─────────────────┬──────────┬──────────┤
+│  BO1       │  BO2       │  BO3            │  BO4     │ Storage  │
+│  Scraping  │  Analytics │  Legal AI       │  3D      │ & Infra  │
+├────────────┼────────────┼─────────────────┼──────────┼──────────┤
+│BeautifulSoup│ XGBoost   │ LangChain + RAG │ Three.js │PostgreSQL│
+│GoogleSearch│ scikit-learn│ FAISS          │ Babylon  │ MongoDB  │
+│            │            │ llama3.2:3b     │ Mapbox   │  FAISS   │
+│            │            │ Streamlit       │          │  Docker  │
+└────────────┴────────────┴─────────────────┴──────────┴──────────┘
+                                  │
+                  ┌───────────────▼────────────────┐
+                  │   FastAPI Backend               │
+                  │   Angular Frontend              │
+                  │   Power BI · KPIs · Alerts      │
+                  └────────────────────────────────┘
 
 ## Architecture 
 
