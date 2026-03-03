@@ -25,6 +25,15 @@ SEED_WEBSITES = [
         },
         "anti_bot_level": 3,
         "is_active": True
+    },
+    {
+        "name": "Tecnocasa",
+        "base_url": "https://www.tecnocasa.tn",
+        "pagination_type": "page",
+        "listing_page_pattern": None,
+        "property_page_selector": None,
+        "anti_bot_level": 1,
+        "is_active": True
     }
 ]
 

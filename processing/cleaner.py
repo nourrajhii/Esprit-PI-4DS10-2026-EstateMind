@@ -1,30 +1,193 @@
+"""
+==============================================================================
+EstateMind AI Data Cleaning Layer
+==============================================================================
+Stage 1 of the ML pipeline.
+
+Responsibilities:
+  - Fetch raw listings from MongoDB.
+  - Filter to Tunisia-only listings (blacklist international keywords).
+  - Remove corrupted / placeholder records (bad price, surface, etc.).
+  - Normalize free-text fields (strip emojis, extra spaces, etc.).
+  - Output → Cleaned Pandas DataFrame passed to feature_engineering.py.
+==============================================================================
+"""
+
 import logging
-from typing import Dict, Any
+import re
+import pandas as pd
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# Standard city mapping if needed
-CITY_MAPPING = {
-    "tunis": "Tunis",
-    "lac 1": "Les Berges du Lac",
-    "lac 2": "Les Berges du Lac 2",
-    "marsa": "La Marsa",
-    # Add more as discovered
+# ─────────────────────────────────────────────────────────────────────────────
+# Geography filters
+# ─────────────────────────────────────────────────────────────────────────────
+TUNISIA_KEYWORDS = [
+    "tunis", "ariana", "ben arous", "manouba", "nabeul", "sousse", "monastir",
+    "mahdia", "sfax", "kairouan", "kasserine", "sidi bouzid", "gabes", "medenine",
+    "tataouine", "gafsa", "tozeur", "kebili", "bizerte", "beja", "jendouba",
+    "kef", "siliana", "zaghouan", "tunisie", "tunisia", "djerba", "hammamet",
+    "marsa", "lac", "ennasr", "menzah", "cite olympique", "el menzah",
+    "charguia", "el aouina", "jardins el menzah"
+]
+
+EXCLUDED_KEYWORDS = [
+    "paris", "marseille", "lyon", "nice", "nantes", "strasbourg", "montpellier",
+    "bordeaux", "lille", "rennes", "toulouse", "france", "belgique", "maroc",
+    "algerie", "casablanca", "alger", "espagne", "italie", "canada",
+]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Type mappings for normalization
+# ─────────────────────────────────────────────────────────────────────────────
+PROPERTY_TYPE_MAP = {
+    "appartement": "appartement",
+    "appart": "appartement",
+    "appt": "appartement",
+    "villa": "villa",
+    "maison": "maison",
+    "local commercial": "local_commercial",
+    "local": "local_commercial",
+    "studio": "studio",
+    "bureau": "bureau",
+    "terrain": "terrain",
+    "lot": "terrain",
+    "parking": "parking",
+    "duplex": "duplex",
+    "triplex": "triplex",
+    "chalet": "chalet",
 }
 
-def clean_city_name(city: str) -> str:
+TRANSACTION_TYPE_MAP = {
+    "vente": "vente",
+    "sale": "vente",
+    "achat": "vente",
+    "à vendre": "vente",
+    "location": "location",
+    "louer": "location",
+    "rent": "location",
+    "à louer": "location",
+}
+
+CITY_NORMALIZER = {
+    "lac 1": "Les Berges du Lac",
+    "lac 2": "Les Berges du Lac 2",
+    "berges du lac": "Les Berges du Lac",
+    "marsa": "La Marsa",
+    "el menzah": "El Menzah",
+    "menzah": "El Menzah",
+    "el manar": "El Manar",
+    "ennasr": "Ennasr",
+    "la soukra": "Soukra",
+    "ain zaghouan": "Ain Zaghouan",
+    "ariana": "Ariana",
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Helpers
+# ─────────────────────────────────────────────────────────────────────────────
+def _is_tunisian(title: str, description: str, city: str) -> bool:
+    text = f"{title} {description} {city}".lower()
+    has_tn = any(kw in text for kw in TUNISIA_KEYWORDS)
+    is_foreign = any(kw in text for kw in EXCLUDED_KEYWORDS)
+    return has_tn and not is_foreign
+
+def _clean_text(text: Optional[str]) -> str:
+    if not text:
+        return ""
+    # Remove emojis and non-printable characters
+    text = re.sub(r'[^\x20-\x7Eàâäéèêëîïôùûüçœæ\u0600-\u06FF\s]', '', text)
+    # Collapse whitespace
+    return re.sub(r'\s+', ' ', text).strip()
+
+def _normalize_city(city: Optional[str]) -> str:
     if not city:
         return "Unknown"
-    
-    city_lower = city.lower().strip()
-    return CITY_MAPPING.get(city_lower, city.strip().capitalize())
+    key = city.lower().strip()
+    return CITY_NORMALIZER.get(key, city.strip().title())
 
-def normalize_price(price_str: str) -> float:
-    if not price_str:
-        return 0.0
-    # Basic numeric cleaner
-    cleaned = ''.join(c for c in price_str if c.isdigit() or c == '.')
-    try:
-        return float(cleaned)
-    except:
-        return 0.0
+def _map_property_type(raw: Optional[str]) -> str:
+    if not raw:
+        return "appartement"
+    raw_l = raw.lower().strip()
+    for k, v in PROPERTY_TYPE_MAP.items():
+        if k in raw_l:
+            return v
+    return raw_l
+
+def _map_transaction_type(raw: Optional[str]) -> str:
+    if not raw:
+        return "vente"
+    raw_l = raw.lower().strip()
+    for k, v in TRANSACTION_TYPE_MAP.items():
+        if k in raw_l:
+            return v
+    return raw_l
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Main pipeline function
+# ─────────────────────────────────────────────────────────────────────────────
+async def run_cleaning_pipeline() -> int:
+    """
+    Fetches raw listings from MongoDB, cleans them, and saves a standardized
+    intermediate CSV: cleaned_listings.csv
+
+    Returns the number of listings that passed all filters.
+    """
+    from database.models import Listing
+    logger.info("─" * 60)
+    logger.info("STAGE 1 │ Data Cleaning Starting…")
+
+    all_listings = await Listing.find_all().to_list()
+    logger.info(f"  Fetched {len(all_listings)} raw listings from MongoDB.")
+
+    cleaned_rows = []
+    rejected = {"not_tn": 0, "bad_price": 0, "bad_surface": 0}
+
+    for item in all_listings:
+        title = _clean_text(item.title)
+        desc  = _clean_text(item.description or "")
+        city  = _normalize_city(item.city)
+
+        # ── Geography filter ──────────────────────────────────────────────
+        if not _is_tunisian(title, desc, city):
+            rejected["not_tn"] += 1
+            continue
+
+        # ── Quality thresholds ────────────────────────────────────────────
+        price = item.price or 0.0
+        if not (50 <= price <= 50_000_000):
+            rejected["bad_price"] += 1
+            continue
+
+        surface = item.surface_m2 or 0.0
+        if not (5 <= surface <= 10_000):
+            rejected["bad_surface"] += 1
+            continue
+
+        cleaned_rows.append({
+            "id":               str(item.id),
+            "title":            title,
+            "price":            price,
+            "city":             city,
+            "zone":             _clean_text(item.zone) or city,
+            "property_type":    _map_property_type(item.property_type),
+            "transaction_type": _map_transaction_type(item.transaction_type),
+            "surface_m2":       surface,
+            "rooms":            max(item.rooms or 1, 1),
+            "bathrooms":        max(item.bathrooms or 1, 1),
+            "description":      desc,
+            "listing_url":      item.listing_url,
+        })
+
+    df = pd.DataFrame(cleaned_rows)
+    df.to_csv("pipeline/cleaned_listings.csv", index=False, encoding="utf-8")
+
+    logger.info(f"  ✅ Kept  : {len(df)}")
+    logger.info(f"  ❌ Rejected (not Tunisia)  : {rejected['not_tn']}")
+    logger.info(f"  ❌ Rejected (bad price)    : {rejected['bad_price']}")
+    logger.info(f"  ❌ Rejected (bad surface)  : {rejected['bad_surface']}")
+    logger.info("STAGE 1 │ Complete → pipeline/cleaned_listings.csv")
+    logger.info("─" * 60)
+    return len(df)

@@ -12,3 +12,7 @@ pydantic
 httpx
 asyncio
 google-search-results
+aiohttp
+scikit-learn
+numpy
+

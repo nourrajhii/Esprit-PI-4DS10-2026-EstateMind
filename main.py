@@ -8,6 +8,10 @@ from scrapers.generic_scraper import GenericStaticScraper
 from scrapers.mubawab_scraper import MubawabScraper
 from scrapers.menzili_scraper import MenZiliScraper
 from processing.reporting import generate_sites_report, export_listings_to_excel
+from processing.image_downloader import download_listing_images
+from processing.cleaner import run_cleaning_pipeline
+from processing.feature_engineering import run_feature_engineering
+import os
 
 logging.basicConfig(
     level=logging.INFO,
@@ -70,6 +74,10 @@ async def run_scraper():
                         )
                         await new_listing.insert()
                         logger.info(f"✅ Saved: {data['title'][:40]}... ({data['price']} {data['currency']})")
+                        
+                        # Trigger image download in the background without blocking the main scraper
+                        if data.get('image_urls'):
+                            asyncio.create_task(download_listing_images(str(new_listing.id), data['image_urls']))
                     else:
                         logger.warning(f"⚠️ Skipping incomplete data for {link}")
                 except Exception as e:
@@ -79,9 +87,24 @@ async def run_scraper():
 
         # Final Export
         await export_listings_to_excel("final_listings_report.xlsx")
-        
+
+        # ── AI Pipeline ───────────────────────────────────────────────────
+        # Stage 1: Clean + Tunisia filter → pipeline/cleaned_listings.csv
+        os.makedirs("pipeline", exist_ok=True)
+        cleaned_count = await run_cleaning_pipeline()
+
+        # Stage 2: Feature engineering → pipeline/X_train.csv etc.
+        if cleaned_count >= 50:
+            fe_result = run_feature_engineering()
+            logger.info(
+                f"AI Pipeline ready: {fe_result['n_features']} features, "
+                f"{fe_result['n_train']} train / {fe_result['n_test']} test samples."
+            )
+        else:
+            logger.warning(f"Only {cleaned_count} clean rows — skipping feature engineering.")
+
         final_count = await Listing.count()
-        logger.info(f"Scraper cycle complete. Total listings in database: {final_count}")
+        logger.info(f"Cycle complete │ DB total: {final_count} │ AI-ready: {cleaned_count}")
 
     except Exception as e:
         logger.error(f"Error in crawler job: {e}")

@@ -1,0 +1,14 @@
+surface_m2
+log_surface
+rooms
+bathrooms
+total_rooms
+rooms_per_m2
+city_tier
+prop_tier
+city_encoded
+is_sale
+is_apartment
+is_villa
+is_studio
+type_appartement
