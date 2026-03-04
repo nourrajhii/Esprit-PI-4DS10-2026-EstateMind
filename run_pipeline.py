@@ -5,11 +5,10 @@ EstateMind AI Pipeline Orchestrator
 Usage:
     python run_pipeline.py
 
-This script runs all ML pipeline stages in order:
-  Stage 0: Sync latest data from MongoDB (runs a scraper cycle if requested)
-  Stage 1: Clean raw listings (cleaner.py)
-  Stage 2: Feature engineering (feature_engineering.py)
-  Stage 3: Print a final feature audit report
+Runs all ML pipeline stages in sequence:
+  Stage 1 │ Clean raw listings          → pipeline/cleaned_listings.csv
+  Stage 2 │ Feature engineering         → pipeline/X_train.csv etc.
+  Stage 3 │ Train price-prediction model→ models/price_model.joblib
 ==============================================================================
 """
 
@@ -17,6 +16,7 @@ import asyncio
 import logging
 import os
 import sys
+import json
 import pandas as pd
 
 logging.basicConfig(
@@ -27,10 +27,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 PIPELINE_DIR = "pipeline"
+MODEL_DIR    = "models"
 
 
 async def run():
     os.makedirs(PIPELINE_DIR, exist_ok=True)
+    os.makedirs(MODEL_DIR, exist_ok=True)
 
     logger.info("=" * 60)
     logger.info("      EstateMind AI Data Pipeline")
@@ -53,28 +55,30 @@ async def run():
     # ── Stage 2: Feature Engineering ──────────────────────────────────────
     from processing.feature_engineering import run_feature_engineering
 
-    result = run_feature_engineering()
+    fe_result = run_feature_engineering()
 
-    # ── Stage 3: Final Feature Audit ──────────────────────────────────────
-    logger.info("─" * 60)
-    logger.info("STAGE 3 │ Feature Audit Report")
+    # ── Stage 3: Train / Retrain Model ────────────────────────────────────
+    from processing.model_trainer import run_model_training
 
-    report = pd.read_csv(f"{PIPELINE_DIR}/feature_report.csv", index_col=0)
-    important_cols = ["mean", "std", "min", "max", "missing_%"]
-    visible = [c for c in important_cols if c in report.columns]
-    logger.info(f"\n{report[visible].to_string()}")
+    model_meta = run_model_training()
 
+    # ── Final Summary ─────────────────────────────────────────────────────
+    logger.info("=" * 60)
+    logger.info("  PIPELINE COMPLETE ✅")
+    logger.info("=" * 60)
+    logger.info(f"  Clean rows       : {n_clean}")
+    logger.info(f"  Features built   : {fe_result['n_features']}")
+    logger.info(f"  Train / Test     : {fe_result['n_train']} / {fe_result['n_test']}")
+    logger.info(f"  Model R²         : {model_meta['r2']} (closer to 1.0 = better)")
+    logger.info(f"  Model MAPE       : {model_meta['mape_pct']}%  (price error on avg)")
     logger.info("─" * 60)
-    logger.info("PIPELINE COMPLETE ✅")
-    logger.info(f"  Features   : {result['n_features']}")
-    logger.info(f"  Train rows : {result['n_train']}")
-    logger.info(f"  Test rows  : {result['n_test']}")
-    logger.info("─" * 60)
-    logger.info("Output files in pipeline/:")
-    for fname in sorted(os.listdir(PIPELINE_DIR)):
-        fpath = os.path.join(PIPELINE_DIR, fname)
-        size  = os.path.getsize(fpath) / 1024
-        logger.info(f"  📄 {fname:35s} {size:8.1f} KB")
+    logger.info("  Output files:")
+    for root_dir in [PIPELINE_DIR, MODEL_DIR]:
+        for fname in sorted(os.listdir(root_dir)):
+            fpath = os.path.join(root_dir, fname)
+            if os.path.isfile(fpath):
+                size = os.path.getsize(fpath) / 1024
+                logger.info(f"    📄 {root_dir}/{fname:35s} {size:7.1f} KB")
     logger.info("=" * 60)
 
 

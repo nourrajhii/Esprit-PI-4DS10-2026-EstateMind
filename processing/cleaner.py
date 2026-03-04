@@ -157,15 +157,23 @@ async def run_cleaning_pipeline() -> int:
 
         # ── Quality thresholds ────────────────────────────────────────────
         price = item.price or 0.0
-        if not (50 <= price <= 50_000_000):
+        # Tunisian real estate: 500 TND min (cheap land), 5M TND max (luxury villa)
+        if not (500 <= price <= 5_000_000):
             rejected["bad_price"] += 1
             continue
 
         surface = item.surface_m2 or 0.0
-        if not (5 <= surface <= 10_000):
+        # Reasonable residential range: 20m² (studio) to 1000m² (large villa)
+        if not (20 <= surface <= 1_000):
             rejected["bad_surface"] += 1
             continue
 
+        rooms = item.rooms or 0
+        # Max 15 rooms — anything above is a scraping error
+        if rooms < 0 or rooms > 15:
+            rooms = max(1, min(rooms, 15))
+
+        bathrooms = max(1, min(item.bathrooms or 1, 10))  # cap bathrooms at 10
         cleaned_rows.append({
             "id":               str(item.id),
             "title":            title,
@@ -175,8 +183,8 @@ async def run_cleaning_pipeline() -> int:
             "property_type":    _map_property_type(item.property_type),
             "transaction_type": _map_transaction_type(item.transaction_type),
             "surface_m2":       surface,
-            "rooms":            max(item.rooms or 1, 1),
-            "bathrooms":        max(item.bathrooms or 1, 1),
+            "rooms":            max(rooms, 1),
+            "bathrooms":        bathrooms,
             "description":      desc,
             "listing_url":      item.listing_url,
         })

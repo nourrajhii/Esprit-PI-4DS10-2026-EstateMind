@@ -1,0 +1,15 @@
+feature,importance
+rooms_per_m2,0.39589639920045283
+log_surface,0.27707033018974614
+surface_m2,0.24577810825117272
+total_rooms,0.028756608195740024
+rooms,0.018131338379120263
+city_encoded,0.018118059145218014
+city_tier,0.01624915663855005
+bathrooms,0.0
+prop_tier,0.0
+is_sale,0.0
+is_apartment,0.0
+is_villa,0.0
+is_studio,0.0
+type_appartement,0.0

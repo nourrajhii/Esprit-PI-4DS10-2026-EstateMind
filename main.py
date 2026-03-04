@@ -11,6 +11,7 @@ from processing.reporting import generate_sites_report, export_listings_to_excel
 from processing.image_downloader import download_listing_images
 from processing.cleaner import run_cleaning_pipeline
 from processing.feature_engineering import run_feature_engineering
+from processing.model_trainer import run_model_training
 import os
 
 logging.basicConfig(
@@ -96,9 +97,12 @@ async def run_scraper():
         # Stage 2: Feature engineering → pipeline/X_train.csv etc.
         if cleaned_count >= 50:
             fe_result = run_feature_engineering()
+            # Stage 3: Train / Retrain the price-prediction model
+            model_meta = run_model_training()
             logger.info(
-                f"AI Pipeline ready: {fe_result['n_features']} features, "
-                f"{fe_result['n_train']} train / {fe_result['n_test']} test samples."
+                f"Model updated: R²={model_meta['r2']} | "
+                f"MAPE={model_meta['mape_pct']}% | "
+                f"Trained on {model_meta['n_train']} samples"
             )
         else:
             logger.warning(f"Only {cleaned_count} clean rows — skipping feature engineering.")

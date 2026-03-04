@@ -1,0 +1,26 @@
+{
+  "trained_at": "2026-03-04T00:42:29.903037",
+  "n_train": 821,
+  "n_test": 206,
+  "n_features": 14,
+  "features": [
+    "surface_m2",
+    "log_surface",
+    "rooms",
+    "bathrooms",
+    "total_rooms",
+    "rooms_per_m2",
+    "city_tier",
+    "prop_tier",
+    "city_encoded",
+    "is_sale",
+    "is_apartment",
+    "is_villa",
+    "is_studio",
+    "type_appartement"
+  ],
+  "mae_log": 2.1973,
+  "rmse_log": 2.582,
+  "r2": 0.1422,
+  "mape_pct": 1133.04
+}
