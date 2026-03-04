@@ -26,9 +26,33 @@ All extracted data is synced in real-time to a Cloud database.
 - **Deduplication**: Uses data hashing to ensure no property is ever saved twice, even across multiple runs.
 - **Excel Export**: For every cycle, a fresh `final_listings_report.xlsx` is generated for instant business use.
 
-## 🚀 How to Run
-1. Install dependencies: `pip install -r requirements.txt`
-2. Configure `.env` (use `.env.example` as a template).
-3. Run the engine: `python main.py`
+## 🛠 Command Reference
 
-*Note: The system is designed to run on a 24-hour cycle automatically.*
+### 1. The Main Engine (Collection + Scraping + AI Sync)
+Run this to start a fresh 24h cycle of data gathering. It will automatically update your AI model at the end.
+```powershell
+python main.py
+```
+
+### 2. The AI Pipeline (Clean + Encode + Retrain)
+Run this if you only want to process existing data in MongoDB and update your model without a new scrape.
+```powershell
+python run_pipeline.py
+```
+
+### 3. Model Testing
+Test your current AI model with a simulated property.
+```powershell
+python predict_example.py
+```
+
+### 4. Database Check
+Quickly see how many listings you have in your local environment.
+```powershell
+python get_count.py
+```
+
+## 📂 Data Structure
+- `pipeline/`: Standardized CSVs for training.
+- `models/`: Your actual AI brain (`.joblib`) and performance history.
+- `downloads/images/`: Automatically collected media folders.
